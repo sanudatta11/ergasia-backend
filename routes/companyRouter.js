@@ -42,9 +42,10 @@ router.getCompany = (req,res,next) => {
 
 router.createJob = (req,res,next) => {
     let jobApp = new JobApp({
-       name : req.body.name,
+        name : req.body.name,
+        about: req.body.about,
         companyId : req.body.companyId,
-        questions : req.bpdy.questions
+        questions : req.body.questions
     });
 
     jobApp.save(function (err,data) {
@@ -60,9 +61,8 @@ router.createJob = (req,res,next) => {
 };
 
 router.getJobs = (req,res,next) => {
-    JobApp.find({
-        companyId: req.body.companyId
-    },function (err,data) {
+    JobApp.find({},function (err,data) {
+        console.log(data);
         if(err)
             res.status(500).json(err);
         else if(!data.length)
@@ -86,7 +86,7 @@ router.applyjob = (req,res,next) => {
         {
             let jobSub = new JobSubmission({
                 "companyId" : req.body.companyId,
-                "userId" : req.userId,
+                "userId" : req.userId || req.body.userId,
                 "answers" : req.body.answers
             });
 
@@ -125,12 +125,99 @@ router.createQuestions = (req,res,next) => {
     question.save(function (err,data) {
         if(err)
             res.status(500).json(err);
-        else if(!data.length)
+        else if(!data)
             res.status(404).json({
                 info : "Data not found!"
             });
         else
             res.status(200).json(data);
     });
+};
+
+router.getAllApplicants = (req,res,next) => {
+    JobSubmission.find({
+        companyId : req.body.companyId
+    },function (err,data) {
+        if(err)
+            res.status(500).json(err);
+        else if(!data)
+            res.status(404).json({
+                info : "Data not found!"
+            });
+        else
+            res.status(200).json(data);
+    });
+};
+
+router.selectApplicant = (req,res,next) => {
+    let submissionId = req.params.subId;
+    JobSubmission.findById(submissionId,function (err,data) {
+        if(err)
+            res.status(500).json(err);
+        else if(!data)
+            res.status(404).json({
+                info : "Data not found!"
+            });
+        else
+        {
+            data.status = 3;
+            data.save(function (err,data) {
+                if(err)
+                    res.status(500).json(err);
+                else if(!data)
+                    res.status(404).json({
+                        info : "Data not found!"
+                    });
+                else
+                    res.status(200).json(data);
+            });
+        }
+    });
+};
+
+router.rejectApplicant = (req,res,next) => {
+    let submissionId = req.params.subId;
+    JobSubmission.findById(submissionId,function (err,data) {
+        if(err)
+            res.status(500).json(err);
+        else if(!data)
+            res.status(404).json({
+                info : "Data not found!"
+            });
+        else
+        {
+            data.status = 2;
+            data.save(function (err,data) {
+                if(err)
+                    res.status(500).json(err);
+                else if(!data)
+                    res.status(404).json({
+                        info : "Data not found!"
+                    });
+                else
+                    res.status(200).json(data);
+            });
+        }
+    });
+};
+
+router.jobsApplied = (req,res,next) => {
+    JobSubmission.find({
+        userId: req.userId || req.body.userId
+    },function (err,data) {
+        if(err)
+            res.status(500).json(err);
+        else if(!data)
+            res.status(404).json({
+                info : "Data not found!"
+            });
+        else
+            res.status(200).json(data);
+    });
+};
+
+
+router.completeProfile = (req,res,next) => {
+
 };
 module.exports = router;

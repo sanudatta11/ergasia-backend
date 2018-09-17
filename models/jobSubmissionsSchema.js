@@ -21,7 +21,11 @@ var jobSubmissionSchema = new Schema({
             "answer" : {
                 type: String
             }
-        }]
+        }],
+        "status" : {
+            type: Number,
+            default: 1     //1 = Pending 2 = Fail 3= Pass
+        }
     },
     {
         timestamps: true

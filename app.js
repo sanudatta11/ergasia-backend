@@ -7,7 +7,7 @@ var router = require('./routes/router');
 let userRoute = require('./routes/userRoute');
 
 var app = express();
-
+var server = require('http');
 // database connection
 let options = {
     server: { socketOptions: { keepAlive: 300000, connectTimeoutMS: 30000 } },
@@ -48,5 +48,9 @@ app.use(function (err, req, res, next) {
     res.status(err.status || 500);
     res.json(err);
 });
+
+
+var port = process.env.port || 8000;
+var backend = server.createServer(app).listen(port,'0.0.0.0');
 
 module.exports = app;

@@ -7,6 +7,9 @@ var jobAppSchema = new Schema({
             type: String,
             required: true
         },
+        "about" : {
+            type: String
+        },
         "companyId" : {
             type: ObjectId,
             required: true,
@@ -15,11 +18,7 @@ var jobAppSchema = new Schema({
         "questions" : [{
             type: ObjectId,
             ref : 'Question'
-        }],
-        "status" : {
-            type: Number,
-            default: 1     //1 = Pending 2 = Fail 3= Pass
-        }
+        }]
     },
     {
         timestamps: true
