@@ -29,25 +29,16 @@ var applicantSchema = new Schema({
         "github" : {
             type: String
         },
-        "bitbucket" : {
-            type: String
-        },
         "linkedIn" : {
             type: String
         },
         "fiverr" : {
             type: String
         },
-        "upwork" : {
-            type: String
-        },
         "codeforces" : {
             type: String
         },
         "codechef"  : {
-            type: String
-        },
-        "spoj"  : {
             type: String
         },
         "behance": {

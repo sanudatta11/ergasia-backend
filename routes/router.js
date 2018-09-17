@@ -57,4 +57,5 @@ router.get('/rejectApplicant/:subId',companyRoute.rejectApplicant);
 //Applicant Only -- Also Returns Status
 router.get('/jobsApplied',companyRoute.jobsApplied);
 router.post('/completeProfile',companyRoute.completeProfile);
+router.get('/isCompleteProfile/:userId',companyRoute.isCompleteProfile);
 module.exports = router;

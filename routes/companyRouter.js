@@ -5,6 +5,7 @@ let Company = require('../models/companySchema');
 let JobApp = require('../models/jobApplicationSchema');
 let JobSubmission = require('../models/jobSubmissionsSchema');
 let Question = require('../models/questionSchema');
+let Applicant = require('../models/applicantSchema');
 
 /* GET users listing. */
 router.createCompany = (req,res,next) => {
@@ -218,6 +219,80 @@ router.jobsApplied = (req,res,next) => {
 
 
 router.completeProfile = (req,res,next) => {
+    let imgUrl = req.body.imgUrl;
+    let resume = req.body.resume;
+    let github = req.body.github;
+    let linkedIn = req.body.linkedIn;
+    let fiverr = req.body.fiverr;
+    let codeforces = req.body.codeforces;
+    let codechef = req.body.codechef;
+    let behance = req.body.behance;
+    let deviantArt = req.body.deviantArt;
+    let codepen = req.body.codepen;
+    if(!imgUrl)
+        res.status(300).json({
+            info : "Img is mandatory!"
+        });
+    else{
+        Applicant.findById(req.body.userId,function (err,data) {
+            if(err)
+                res.status(500).json(err);
+            else if(!data)
+                res.status(404).json({
+                    info : "Data not found!"
+                });
+            else
+            {
+                data.imgUrl = imgUrl;
+                if(resume)
+                    data.resume = resume;
+                if(github)
+                    data.github = github;
+                if(linkedIn)
+                    data.linkedIn = linkedIn;
+                if(fiverr)
+                    data.fiverr = fiverr;
+                if(codeforces)
+                    data.codeforces = codeforces;
+                if(codechef)
+                    data.codechef = codechef;
+                if(behance)
+                    data.behance = behance;
+                if(deviantArt)
+                    data.deviantArt = deviantArt;
+                if(codepen)
+                    data.codepen = codepen;
 
+                data.save(function (err,data) {
+                    if(err)
+                        res.status(500).json(err);
+                    else if(!data)
+                        res.status(404).json({
+                            info : "Data not saved!"
+                        });
+                    else
+                        res.status(200).json(data);
+                });
+            }
+        });
+    }
+};
+
+router.isCompleteProfile = (req,res,next) => {
+  Applicant.findById(req.params.userId,function (err,data) {
+      if(err)
+          res.status(500).json(err);
+      else if(!data)
+          res.status(404).json({
+              info : "Data not found!"
+          });
+      else
+      {
+          if(data.imgUrl && data.github)
+              res.status(200).json(data);
+          else
+              res.status(300).json(data);
+      }
+  });
 };
 module.exports = router;
