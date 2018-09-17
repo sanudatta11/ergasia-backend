@@ -9,6 +9,7 @@ let crypto = require('crypto');
 
 let Recruiter = require('../models/recruiterSchema');
 let Applicant = require('../models/applicantSchema');
+let Question = require('../models/questionSchema');
 
 router.createUserRecruiter = function (req, res, next) {
     try {

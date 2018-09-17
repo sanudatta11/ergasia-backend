@@ -4,6 +4,7 @@ var router = express.Router();
 let Company = require('../models/companySchema');
 let JobApp = require('../models/jobApplicationSchema');
 let JobSubmission = require('../models/jobSubmissionsSchema');
+let Question = require('../models/questionSchema');
 
 /* GET users listing. */
 router.createCompany = (req,res,next) => {
@@ -103,6 +104,33 @@ router.applyjob = (req,res,next) => {
     });
 };
 
+router.getQuestions = (req,res,next) => {
+    Question.find({},function (err,data) {
+        if(err)
+            res.status(500).json(err);
+        else if(!data.length)
+            res.status(404).json({
+                info : "Data not found!"
+            });
+        else
+            res.status(200).json(data);
+    });
+};
 
+router.createQuestions = (req,res,next) => {
+    let question = new Question({
+        question : req.body.question
+    });
 
+    question.save(function (err,data) {
+        if(err)
+            res.status(500).json(err);
+        else if(!data.length)
+            res.status(404).json({
+                info : "Data not found!"
+            });
+        else
+            res.status(200).json(data);
+    });
+};
 module.exports = router;

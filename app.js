@@ -4,6 +4,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var mongoose = require('mongoose');
 var router = require('./routes/router');
+let userRoute = require('./routes/userRoute');
 
 var app = express();
 
@@ -26,6 +27,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+app.get('/loginRecruiter',userRoute.loginRecruiter);
+app.post('/createUserRecruiter',userRoute.createUserRecruiter);
 app.use('/api',router);
 
 // catch 404 and forward to error handler -- Error Handler Rest API
