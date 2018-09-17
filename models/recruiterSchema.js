@@ -21,8 +21,7 @@ var userSchema = new Schema({
             required: true
         },
         "imgUrl" : {
-            type : String,
-            required: true
+            type : String
         },
         "companyId" : {
             type : ObjectId,
@@ -35,4 +34,4 @@ var userSchema = new Schema({
     }
 );
 
-module.exports = mongoose.model('Property', userSchema);
+module.exports = mongoose.model('Recruiter', userSchema);

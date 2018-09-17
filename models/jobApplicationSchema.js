@@ -15,7 +15,11 @@ var jobAppSchema = new Schema({
         "questions" : [{
             type: ObjectId,
             ref : 'Question'
-        }]
+        }],
+        "status" : {
+            type: Number,
+            default: 1     //1 = Pending 2 = Fail 3= Pass
+        }
     },
     {
         timestamps: true

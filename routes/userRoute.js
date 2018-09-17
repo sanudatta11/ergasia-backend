@@ -1,14 +1,23 @@
 var express = require('express');
 var router = express.Router();
+var mongoose = require('mongoose');
+let validator = require('validator');
+let async = require('async');
+let jwt = require('jsonwebtoken');
+let SHA256 = require('sha256-es');
+let crypto = require('crypto');
 
+let Recruiter = require('../models/recruiterSchema');
+let Applicant = require('../models/applicantSchema');
 
-
-router.createUser = function (req, res, next) {
+router.createUserRecruiter = function (req, res, next) {
     try {
         let firstName = req.body.firstName.toLowerCase();
         let lastName = req.body.lastName.toLowerCase();
         let email = req.body.email.toLowerCase();
         let password = req.body.password.toLowerCase();
+        let companyId = req.body.companyId;
+        let imgUrl = req.body.imgUrl;
         async.waterfall([
             function (callback) {
                 console.log('Data validation and checking');
@@ -24,14 +33,10 @@ router.createUser = function (req, res, next) {
                     } else {
                         //Validation Check
                         let valid = true;
-                        valid = valid && validator.isAlphanumeric(username);
                         valid = valid && validator.isAlpha(firstName);
                         valid = valid && validator.isAlpha(lastName);
                         valid = valid && validator.isEmail(email);
                         valid = valid && !validator.isEmpty(password);
-                        valid = valid && validator.isMobilePhone(phone);
-                        valid = valid && validator.isAlpha(gender);
-                        valid = valid && validator.isAlpha(type);
 
                         if (!valid)
                             res.status(401).json({
@@ -44,47 +49,15 @@ router.createUser = function (req, res, next) {
                 }
             },
             function (callback) {
-                if (groupId) {
-                    Group.findById(groupId, function (err, data) {
-                        if (err)
-                            res.status(500).json({
-                                error: err
-                            });
-                        else if (!data)
-                            res.status(403).json({
-                                info: "No data on the group Id, cannot create User!"
-                            });
-                        else
-                            callback(null);
-                    });
-                } else
-                    callback(null);
-            },
-            function (callback) {
                 let hash = crypto.createHash('sha256').update(password).digest('base64');
-                var query = {}
-                if (email && username) {
-                    query = {
-                        $or: [{
-                            username: {
-                                $regex: username,
-                                $options: 'i'
-                            }
-                        }, {
-                            email: {
-                                $regex: email,
-                                $options: 'i'
-                            }
-                        }]
-                    }
-                }
-
-                User.findOne(query,function(err,data){
+                User.findOne({
+                    email :  email
+                },function(err,data){
                     if(err)
                         res.status(500).json({
                             info : "Problem in searching previous same user",
                             error:err
-                        })
+                        });
                     else if(data)
                     {
                         res.status(300).json({
@@ -92,20 +65,16 @@ router.createUser = function (req, res, next) {
                         })
                     }
                     else{
-                        let userObj = new User({
-                            username: username,
+                        let userObj = new Recruiter({
                             firstName: firstName,
                             lastName: lastName,
                             email: email,
                             password: hash,
-                            phone: phone,
-                            gender: gender,
-                            type: type,
-                            userStatus: userStatus
+                            companyId: companyId
                         });
 
-                        if (groupId)
-                            userObj.groupId = groupId;
+                        if (imgUrl)
+                            userObj.imgUrl = imgUrl;
 
                         userObj.save(function (err, data) {
                             if (err)
@@ -131,7 +100,7 @@ router.createUser = function (req, res, next) {
     }
 };
 
-router.loginUser = function (req, res, next) {
+router.loginUserApplicant = function (req, res, next) {
     try {
         if (req.body.type == "g-auth" && req.body.gAuthToken) {
             console.log("Inside G-Auth");
@@ -154,7 +123,7 @@ router.loginUser = function (req, res, next) {
                 console.error(err);
                 res.status(502).json(err);
             });
-            User.findOne({
+            Applicant.findOne({
                 email: email,
             }, function (err, data) {
                 if (err)
@@ -187,7 +156,7 @@ router.loginUser = function (req, res, next) {
             let email = req.body.email;
             let password = req.body.password;
             let hash = crypto.createHash('sha256').update(password).digest('base64');
-            User.findOne({
+            Applicant.findOne({
                 email: email,
             }, function (err, data) {
                 if (err)
@@ -214,10 +183,7 @@ router.loginUser = function (req, res, next) {
 
                         res.status(200).json({
                             info: "User Login successfull",
-                            token: jwtToken,
-                            groupId: data.groupId,
-                            userId: data._id,
-                            email : data.email
+                            token: jwtToken
                         })
                     }
                 }
@@ -227,5 +193,43 @@ router.loginUser = function (req, res, next) {
         res.status(500).json(err);
     }
 };
+
+router.loginRecruiter = (req,res,next) => {
+    let email = req.body.email;
+    let password = req.body.password;
+    let hash = crypto.createHash('sha256').update(password).digest('base64');
+    Recruiter.findOne({
+        email: email,
+    }, function (err, data) {
+        if (err)
+            res.status(500).json({
+                error: err
+            });
+        else if (!data)
+            res.status(404).json({
+                info: "Data not found"
+            });
+        else {
+            if (data.password != hash) {
+                res.status(400).json({
+                    info: "Password Incorrect",
+                })
+            } else {
+                let jwtToken = jwt.sign({
+                    userId: data._id,
+                    companyId: data.companyId
+                }, 'supersecret', {
+                    expiresIn: 150000000
+                });
+
+                res.status(200).json({
+                    info: "User Login successfull",
+                    token: jwtToken,
+                })
+            }
+        }
+    });
+};
+
 
 module.exports = router;

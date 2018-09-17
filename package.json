@@ -8,11 +8,15 @@
   "dependencies": {
     "async": "^2.6.1",
     "cookie-parser": "~1.4.3",
+    "crypto": "^1.0.1",
     "debug": "~2.6.9",
     "express": "~4.16.0",
+    "jsonwebtoken": "^8.3.0",
     "mongoose": "^5.2.15",
     "morgan": "~1.9.0",
-    "swagger-ui-express": "^4.0.1"
+    "sha256-es": "^1.8.2",
+    "swagger-ui-express": "^4.0.1",
+    "validator": "^10.7.1"
   },
   "main": "app.js",
   "repository": "https://github.com/sanudatta11/ergasia-backend.git",

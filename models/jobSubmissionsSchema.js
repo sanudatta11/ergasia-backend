@@ -3,10 +3,6 @@ var Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;
 
 var jobSubmissionSchema = new Schema({
-        "name":{
-            type: String,
-            required: true
-        },
         "companyId" : {
             type: ObjectId,
             required: true,
@@ -15,7 +11,7 @@ var jobSubmissionSchema = new Schema({
         "userId" : {
             type: ObjectId,
             required: true,
-            ref: 'User'
+            ref: 'Applicant'
         },
         "answers" : [{
             "question": {

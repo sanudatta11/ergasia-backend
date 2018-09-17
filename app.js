@@ -2,7 +2,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-
+var mongoose = require('mongoose');
 var router = require('./routes/router');
 
 var app = express();
@@ -27,7 +27,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use('/api',router);
-app.use('/', indexRouter);
 
 // catch 404 and forward to error handler -- Error Handler Rest API
 app.use(function (req, res, next) {
