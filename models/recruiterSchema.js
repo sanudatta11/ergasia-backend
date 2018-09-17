@@ -21,7 +21,8 @@ var userSchema = new Schema({
         },
         "companyId" : {
             type : ObjectId,
-            required: true
+            required: true,
+            ref: 'Company'
         }
     },
     {
