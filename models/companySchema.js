@@ -16,10 +16,7 @@ var companySchema = new Schema({
         },
         "funding" : {
             type: String
-        },
-        "founders":[{
-            type : String
-        }]
+        }
     },
     {
         timestamps: true
