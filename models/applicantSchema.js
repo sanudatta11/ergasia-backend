@@ -16,9 +16,11 @@ var applicantSchema = new Schema({
             type: String,
             required: true
         },
+        "password" : {
+            type: String
+        },
         "about" : {
-            type: String,
-            required: true
+            type: String
         },
         "imgUrl": {
             type: String
@@ -50,6 +52,9 @@ var applicantSchema = new Schema({
         "codepen" : {
             type: String
         },
+        "positions" : {
+            type : Object
+        }
     },
     {
         timestamps: true

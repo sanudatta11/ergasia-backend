@@ -7,6 +7,10 @@ var logger = require('morgan');
 var mongoose = require('mongoose');
 var router = require('./routes/router');
 let userRoute = require('./routes/userRoute');
+// let BaseURL = "https://ergasi-nodejs.cfapps.us10.hana.ondemand.com/";
+let BaseURL = "https://ergasia-216815.firebaseapp.com/";
+// let BaseURL = "http://localhost:8000/";
+var Linkedin = require('node-linkedin')('814yacdk68651y', 'XLxay5VcmZYWaYAG', BaseURL + 'oauth/linkedin/callback');
 
 var app = express();
 var server = require('http');
@@ -31,7 +35,18 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+var scope = ['r_basicprofile', 'r_emailaddress'];
+app.get('/oauth/linkedin', function(req, res) {
+    try {
+        Linkedin.auth.authorize(res, scope);
+    }catch (e) {
+        console.error(e);
+        res.status(500).json(e);
+    }
+});
 
+app.get('/oauth/linkedin/callback', userRoute.loginLinkedInApplicant);
+app.post('/loginApplicant',userRoute.loginApplicant);
 app.post('/loginRecruiter',userRoute.loginRecruiter);
 app.post('/createUserRecruiter',userRoute.createUserRecruiter);
 app.use('/api',router);

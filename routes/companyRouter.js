@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var request = require('request');
+const requestPromise = require('request-promise');
 var cheerio = require('cheerio');
 let Company = require('../models/companySchema');
 let JobApp = require('../models/jobApplicationSchema');
@@ -10,6 +11,8 @@ let Applicant = require('../models/applicantSchema');
 
 let codeChefURI = "https://www.codechef.com/users/";
 let fiverrURI = "https://www.fiverr.com/";
+const linkedInURL = 'https://www.linkedin.com/in/';
+
 var customHeaderRequest = request.defaults({
     headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36'
@@ -296,7 +299,9 @@ router.isCompleteProfile = (req, res, next) => {
             if (data.imgUrl && data.github)
                 res.status(200).json(data);
             else
-                res.status(300).json(data);
+                res.status(400).json({
+                    info : "Not Full"
+                });
         }
     });
 };
@@ -359,6 +364,17 @@ router.getFiverr = (req,res,next) => {
             res.status(500).json(err);
         }
     })
+};
+
+
+router.getLinkedIn = (req,res,next) => {
+
+    // requestPromise(url)
+    //     .then(html => linkedInProfile(html))
+    //     .then(profile => {
+    //         console.log(profile);
+    //         res.status(200).json(profile);
+    //     });
 };
 
 module.exports = router;

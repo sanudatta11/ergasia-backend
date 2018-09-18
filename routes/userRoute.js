@@ -11,6 +11,9 @@ let Recruiter = require('../models/recruiterSchema');
 let Applicant = require('../models/applicantSchema');
 let Question = require('../models/questionSchema');
 
+let BaseURL = "https://ergasia-216815.firebaseapp.com/";
+var Linkedin = require('node-linkedin')('814yacdk68651y', 'XLxay5VcmZYWaYAG', BaseURL + 'oauth/linkedin/callback');
+var scope = ['r_basicprofile', 'r_emailaddress'];
 router.createUserRecruiter = function (req, res, next) {
     try {
         let firstName = req.body.firstName.toLowerCase();
@@ -100,100 +103,6 @@ router.createUserRecruiter = function (req, res, next) {
         res.status(500).json(err);
     }
 };
-//
-// router.loginUserApplicant = function (req, res, next) {
-//     try {
-//         if (req.body.type == "g-auth" && req.body.gAuthToken) {
-//             console.log("Inside G-Auth");
-//             let token = req.body.gAuthToken;
-//             let email = req.body.email;
-//             if (!token) {
-//                 res.status(304).json({
-//                     info: "G-Auth Token Invalid or not Found!"
-//                 })
-//             }
-//             async function verify() {
-//                 const ticket = await client.verifyIdToken({
-//                     idToken: token,
-//                     audience: CLIENT_ID
-//                 });
-//                 const payload = ticket.getPayload();
-//                 const userId = payload['sub'];
-//             }
-//             verify().catch((err) => {
-//                 console.error(err);
-//                 res.status(502).json(err);
-//             });
-//             Applicant.findOne({
-//                 email: email,
-//             }, function (err, data) {
-//                 if (err)
-//                     res.status(500).json({
-//                         error: err
-//                     });
-//                 else if (!data)
-//                     res.status(404).json({
-//                         info: "Data not found"
-//                     });
-//                 else {
-//                     let jwtToken = jwt.sign({
-//                         userId: data._id,
-//                         userStatus: data.userStatus,
-//                         groupId: data.groupId
-//                     }, 'supersecret', {
-//                         expiresIn: 150000000
-//                     });
-//
-//                     res.status(200).json({
-//                         info: "User Login successfull",
-//                         token: jwtToken,
-//                         groupId: data.groupId,
-//                         userId: data._id,
-//                         email : data.email
-//                     })
-//                 }
-//             });
-//         } else {
-//             let email = req.body.email;
-//             let password = req.body.password;
-//             let hash = crypto.createHash('sha256').update(password).digest('base64');
-//             Applicant.findOne({
-//                 email: email,
-//             }, function (err, data) {
-//                 if (err)
-//                     res.status(500).json({
-//                         error: err
-//                     });
-//                 else if (!data)
-//                     res.status(404).json({
-//                         info: "Data not found"
-//                     });
-//                 else {
-//                     if (data.password != hash) {
-//                         res.status(400).json({
-//                             info: "Password Incorrect",
-//                         })
-//                     } else {
-//                         let jwtToken = jwt.sign({
-//                             userId: data._id,
-//                             userStatus: data.userStatus,
-//                             groupId: data.groupId
-//                         }, 'supersecret', {
-//                             expiresIn: 150000000
-//                         });
-//
-//                         res.status(200).json({
-//                             info: "User Login successfull",
-//                             token: jwtToken
-//                         })
-//                     }
-//                 }
-//             });
-//         }
-//     } catch (err) {
-//         res.status(500).json(err);
-//     }
-// };
 
 router.loginRecruiter = (req,res,next) => {
     let email = req.body.email;
@@ -232,5 +141,130 @@ router.loginRecruiter = (req,res,next) => {
     });
 };
 
+router.loginApplicant = (req,res,next) => {
+    let email = req.body.email;
+    let password = req.body.password;
 
+    let hash = crypto.createHash('sha256').update(password).digest('base64');
+    console.log(password,hash);
+    Applicant.findOne({
+        email: email,
+    }, function (err, data) {
+        if (err)
+            res.status(500).json({
+                error: err
+            });
+        else if (!data)
+            res.status(404).json({
+                info: "Data not found"
+            });
+        else {
+            if (data.password !== hash) {
+                res.status(400).json({
+                    required: data.password,
+                    got : hash,
+                    info: "Password Incorrect",
+                })
+            } else {
+                let jwtToken = jwt.sign({
+                    userId: data._id,
+                    companyId: data.companyId
+                }, 'supersecret', {
+                    expiresIn: 150000000
+                });
+
+                res.status(200).json({
+                    info: "Applicant Login successful",
+                    token: jwtToken,
+                    userId: data._id,
+                })
+            }
+        }
+    });
+};
+
+router.loginLinkedInApplicant = (req, res) => {
+    try {
+        Linkedin.auth.getAccessToken(res, req.query.code, req.query.state, function(err, results) {
+            if ( err )
+                res.status(500).json(err);
+            /**
+             * Results have something like:
+             * {"expires_in":5184000,"access_token":". . . ."}
+             */
+            let accessToken = results.access_token;
+            var linkedin = Linkedin.init(accessToken);
+            linkedin.people.me(function(err, data) {
+                let email = data.emailAddress;
+                let firstName = data.firstName;
+                let lastName = data.lastName;
+
+                Applicant.findOne({
+                    email : email
+                },function (err,userObj) {
+                    if (err)
+                        res.status(500).json({
+                            error: err
+                        });
+                    else if (!userObj)
+                    {
+                        //Singup
+                        let newUserObj = new Applicant({
+                            email : email,
+                            firstName : firstName,
+                            password :  "O8Sbc+L7IBkk2dzOX7bW/Xz79YxJvozEZDnAXcY0sVE=",
+                            lastName: lastName,
+                            about : data.summary,
+                            imgUrl : data.pictureUrls.values[0],
+                            linkedIn : data.publicProfileUrl,
+                            positions : data.positions
+                        });
+
+                        newUserObj.save(function (err,data) {
+                            if(err)
+                                res.status(500).json(err);
+                            else if(!data)
+                                res.status(404).json({
+                                    info : "Save error signup"
+                                })
+                            else
+                            {
+                                let jwtToken = jwt.sign({
+                                    userId: userObj._id
+                                }, 'supersecret', {
+                                    expiresIn: 150000000
+                                });
+
+                                res.status(200).json({
+                                    info: "Applicant SignUp successfull",
+                                    token: jwtToken,
+                                    userId: data._id,
+                                    email : email
+                                })
+                            }
+                        });
+                    }
+                    else {
+                        let jwtToken = jwt.sign({
+                            userId: userObj._id,
+                            companyId : userObj.companyId
+                        }, 'supersecret', {
+                            expiresIn: 150000000
+                        });
+
+                        res.status(200).json({
+                            info: "Applicant Login successfull",
+                            token: jwtToken,
+                            userId: userObj._id,
+                            email : email
+                        })
+                    }
+                });
+            });
+        });
+    }catch (e) {
+        console.error(e);
+        res.status(500).json(e);
+    }
+}
 module.exports = router;

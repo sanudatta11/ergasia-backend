@@ -59,6 +59,8 @@ router.get('/jobsApplied',companyRoute.jobsApplied);
 router.post('/completeProfile',companyRoute.completeProfile);
 router.get('/isCompleteProfile/:userId',companyRoute.isCompleteProfile);
 
+//Scrappers
 router.get('/getCodechefProfile/:codechef',companyRoute.getCodeChef);
 router.get('/getFiverrProfile/:fiverr',companyRoute.getFiverr);
+router.get('/getLinkedInProfile/:linkedIn',companyRoute.getLinkedIn);
 module.exports = router;
