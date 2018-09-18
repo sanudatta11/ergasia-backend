@@ -72,7 +72,7 @@ router.createJob = (req, res, next) => {
 };
 
 router.getJobs = (req, res, next) => {
-    JobApp.find({}, function (err, data) {
+    JobApp.find({}).populate('companyId').exec(function (err, data) {
         console.log(data);
         if (err)
             res.status(500).json(err);
