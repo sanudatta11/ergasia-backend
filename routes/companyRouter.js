@@ -1,102 +1,111 @@
 var express = require('express');
 var router = express.Router();
-
+var request = require('request');
+var cheerio = require('cheerio');
 let Company = require('../models/companySchema');
 let JobApp = require('../models/jobApplicationSchema');
 let JobSubmission = require('../models/jobSubmissionsSchema');
 let Question = require('../models/questionSchema');
 let Applicant = require('../models/applicantSchema');
 
+let codeChefURI = "https://www.codechef.com/users/";
+let fiverrURI = "https://www.fiverr.com/";
+var customHeaderRequest = request.defaults({
+    headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36'
+    }
+});
+
 /* GET users listing. */
-router.createCompany = (req,res,next) => {
+router.createCompany = (req, res, next) => {
     let companyObj = new Company({
-        "name":req.body.name,
-        "about" : req.body.about,
-        "yearFounded" : req.body.yearFounded,
-        "funding" :req.body.funding,
+        "name": req.body.name,
+        "about": req.body.about,
+        "yearFounded": req.body.yearFounded,
+        "funding": req.body.funding,
     });
 
-    companyObj.save(function (err,data) {
-       if(err)
-           res.status(500).json(err);
-       else if(!data)
-           res.status(404).json({
-               info : "Data not saved! not some error"
-           });
-       else
-           res.status(200).json(data);
-    });
-};
-
-router.getCompany = (req,res,next) => {
-    Company.find({},function (err,data) {
-        if(err)
+    companyObj.save(function (err, data) {
+        if (err)
             res.status(500).json(err);
-        else if(!data.length)
+        else if (!data)
             res.status(404).json({
-                info : "Data not found!"
+                info: "Data not saved! not some error"
             });
         else
             res.status(200).json(data);
     });
 };
 
-router.createJob = (req,res,next) => {
+router.getCompany = (req, res, next) => {
+    Company.find({}, function (err, data) {
+        if (err)
+            res.status(500).json(err);
+        else if (!data.length)
+            res.status(404).json({
+                info: "Data not found!"
+            });
+        else
+            res.status(200).json(data);
+    });
+};
+
+router.createJob = (req, res, next) => {
     let jobApp = new JobApp({
-        name : req.body.name,
+        name: req.body.name,
         about: req.body.about,
-        companyId : req.body.companyId,
-        questions : req.body.questions
+        companyId: req.body.companyId,
+        questions: req.body.questions,
     });
-
-    jobApp.save(function (err,data) {
-        if(err)
+    if(req.body.salary)
+        jobApp.salary = req.body.salary;
+    jobApp.save(function (err, data) {
+        if (err)
             res.status(500).json(err);
-        else if(!data)
+        else if (!data)
             res.status(404).json({
-                info : "Data not saved!"
+                info: "Data not saved!"
             });
         else
             res.status(200).json(data);
     });
 };
 
-router.getJobs = (req,res,next) => {
-    JobApp.find({},function (err,data) {
+router.getJobs = (req, res, next) => {
+    JobApp.find({}, function (err, data) {
         console.log(data);
-        if(err)
+        if (err)
             res.status(500).json(err);
-        else if(!data.length)
+        else if (!data.length)
             res.status(404).json({
-                info : "Data not found!"
+                info: "Data not found!"
             });
         else
             res.status(200).json(data);
     });
 };
 
-router.applyjob = (req,res,next) => {
-    JobApp.findById(req.body.jobId,function (err,jobAppData) {
-        if(err)
+router.applyjob = (req, res, next) => {
+    JobApp.findById(req.body.jobId, function (err, jobAppData) {
+        if (err)
             res.status(500).json(err);
-        else if(!jobAppData)
+        else if (!jobAppData)
             res.status(404).json({
-                info : "Data not found!"
+                info: "Data not found!"
             });
-        else
-        {
+        else {
             let jobSub = new JobSubmission({
-                "companyId" : req.body.companyId,
-                "userId" : req.userId || req.body.userId,
-                "answers" : req.body.answers
+                "companyId": req.body.companyId,
+                "userId": req.userId || req.body.userId,
+                "answers": req.body.answers
             });
 
-            jobSub.save(function (err,data) {
-                if(err)
+            jobSub.save(function (err, data) {
+                if (err)
                     res.status(500).json(err);
-                else if(!data.length)
+                else if (!data.length)
                     res.status(404).json({
-                        info : "Data not saved!"
+                        info: "Data not saved!"
                     });
                 else
                     res.status(200).json(data);
@@ -105,69 +114,68 @@ router.applyjob = (req,res,next) => {
     });
 };
 
-router.getQuestions = (req,res,next) => {
-    Question.find({},function (err,data) {
-        if(err)
+router.getQuestions = (req, res, next) => {
+    Question.find({}, function (err, data) {
+        if (err)
             res.status(500).json(err);
-        else if(!data.length)
+        else if (!data.length)
             res.status(404).json({
-                info : "Data not found!"
+                info: "Data not found!"
             });
         else
             res.status(200).json(data);
     });
 };
 
-router.createQuestions = (req,res,next) => {
+router.createQuestions = (req, res, next) => {
     let question = new Question({
-        question : req.body.question
+        question: req.body.question
     });
 
-    question.save(function (err,data) {
-        if(err)
+    question.save(function (err, data) {
+        if (err)
             res.status(500).json(err);
-        else if(!data)
+        else if (!data)
             res.status(404).json({
-                info : "Data not found!"
+                info: "Data not found!"
             });
         else
             res.status(200).json(data);
     });
 };
 
-router.getAllApplicants = (req,res,next) => {
+router.getAllApplicants = (req, res, next) => {
     JobSubmission.find({
-        companyId : req.body.companyId
-    },function (err,data) {
-        if(err)
+        companyId: req.body.companyId
+    }, function (err, data) {
+        if (err)
             res.status(500).json(err);
-        else if(!data)
+        else if (!data)
             res.status(404).json({
-                info : "Data not found!"
+                info: "Data not found!"
             });
         else
             res.status(200).json(data);
     });
 };
 
-router.selectApplicant = (req,res,next) => {
+router.selectApplicant = (req, res, next) => {
     let submissionId = req.params.subId;
-    JobSubmission.findById(submissionId,function (err,data) {
-        if(err)
+    JobSubmission.findById(submissionId, function (err, data) {
+        if (err)
             res.status(500).json(err);
-        else if(!data)
+        else if (!data)
             res.status(404).json({
-                info : "Data not found!"
+                info: "Data not found!"
             });
-        else
-        {
+        else {
             data.status = 3;
-            data.save(function (err,data) {
-                if(err)
+            data.save(function (err, data) {
+                if (err)
                     res.status(500).json(err);
-                else if(!data)
+                else if (!data)
                     res.status(404).json({
-                        info : "Data not found!"
+                        info: "Data not found!"
                     });
                 else
                     res.status(200).json(data);
@@ -176,24 +184,23 @@ router.selectApplicant = (req,res,next) => {
     });
 };
 
-router.rejectApplicant = (req,res,next) => {
+router.rejectApplicant = (req, res, next) => {
     let submissionId = req.params.subId;
-    JobSubmission.findById(submissionId,function (err,data) {
-        if(err)
+    JobSubmission.findById(submissionId, function (err, data) {
+        if (err)
             res.status(500).json(err);
-        else if(!data)
+        else if (!data)
             res.status(404).json({
-                info : "Data not found!"
+                info: "Data not found!"
             });
-        else
-        {
+        else {
             data.status = 2;
-            data.save(function (err,data) {
-                if(err)
+            data.save(function (err, data) {
+                if (err)
                     res.status(500).json(err);
-                else if(!data)
+                else if (!data)
                     res.status(404).json({
-                        info : "Data not found!"
+                        info: "Data not found!"
                     });
                 else
                     res.status(200).json(data);
@@ -202,15 +209,15 @@ router.rejectApplicant = (req,res,next) => {
     });
 };
 
-router.jobsApplied = (req,res,next) => {
+router.jobsApplied = (req, res, next) => {
     JobSubmission.find({
         userId: req.userId || req.body.userId
-    },function (err,data) {
-        if(err)
+    }, function (err, data) {
+        if (err)
             res.status(500).json(err);
-        else if(!data)
+        else if (!data)
             res.status(404).json({
-                info : "Data not found!"
+                info: "Data not found!"
             });
         else
             res.status(200).json(data);
@@ -218,7 +225,7 @@ router.jobsApplied = (req,res,next) => {
 };
 
 
-router.completeProfile = (req,res,next) => {
+router.completeProfile = (req, res, next) => {
     let imgUrl = req.body.imgUrl;
     let resume = req.body.resume;
     let github = req.body.github;
@@ -229,46 +236,45 @@ router.completeProfile = (req,res,next) => {
     let behance = req.body.behance;
     let deviantArt = req.body.deviantArt;
     let codepen = req.body.codepen;
-    if(!imgUrl)
+    if (!imgUrl)
         res.status(300).json({
-            info : "Img is mandatory!"
+            info: "Img is mandatory!"
         });
-    else{
-        Applicant.findById(req.body.userId,function (err,data) {
-            if(err)
+    else {
+        Applicant.findById(req.body.userId, function (err, data) {
+            if (err)
                 res.status(500).json(err);
-            else if(!data)
+            else if (!data)
                 res.status(404).json({
-                    info : "Data not found!"
+                    info: "Data not found!"
                 });
-            else
-            {
+            else {
                 data.imgUrl = imgUrl;
-                if(resume)
+                if (resume)
                     data.resume = resume;
-                if(github)
+                if (github)
                     data.github = github;
-                if(linkedIn)
+                if (linkedIn)
                     data.linkedIn = linkedIn;
-                if(fiverr)
+                if (fiverr)
                     data.fiverr = fiverr;
-                if(codeforces)
+                if (codeforces)
                     data.codeforces = codeforces;
-                if(codechef)
+                if (codechef)
                     data.codechef = codechef;
-                if(behance)
+                if (behance)
                     data.behance = behance;
-                if(deviantArt)
+                if (deviantArt)
                     data.deviantArt = deviantArt;
-                if(codepen)
+                if (codepen)
                     data.codepen = codepen;
 
-                data.save(function (err,data) {
-                    if(err)
+                data.save(function (err, data) {
+                    if (err)
                         res.status(500).json(err);
-                    else if(!data)
+                    else if (!data)
                         res.status(404).json({
-                            info : "Data not saved!"
+                            info: "Data not saved!"
                         });
                     else
                         res.status(200).json(data);
@@ -278,21 +284,81 @@ router.completeProfile = (req,res,next) => {
     }
 };
 
-router.isCompleteProfile = (req,res,next) => {
-  Applicant.findById(req.params.userId,function (err,data) {
-      if(err)
-          res.status(500).json(err);
-      else if(!data)
-          res.status(404).json({
-              info : "Data not found!"
-          });
-      else
-      {
-          if(data.imgUrl && data.github)
-              res.status(200).json(data);
-          else
-              res.status(300).json(data);
-      }
-  });
+router.isCompleteProfile = (req, res, next) => {
+    Applicant.findById(req.params.userId, function (err, data) {
+        if (err)
+            res.status(500).json(err);
+        else if (!data)
+            res.status(404).json({
+                info: "Data not found!"
+            });
+        else {
+            if (data.imgUrl && data.github)
+                res.status(200).json(data);
+            else
+                res.status(300).json(data);
+        }
+    });
 };
+
+router.getCodeChef = (req, res, next) => {
+    let URI = codeChefURI +req.params.codechef;
+    customHeaderRequest.get(URI, function (err, response, html) {
+        if (!err && response.statusCode == 200) {
+            var $ = cheerio.load(html);
+            var globalRank, countryRank, rating;
+            var json = {globalRank: "", countryRank: "", rating: ""};
+            $('.rating-number').filter(function () {
+                var data = $(this);
+                rating = data.text();
+                json.rating = rating;
+            })
+            globalRank = $('.rating-ranks').find('strong').eq(0).text();
+            countryRank = $('.rating-ranks').find('strong').eq(1).text();
+            json.globalRank = globalRank;
+            json.countryRank = countryRank;
+
+            json.longChallenge= {
+              rating : $('#hp-sidebar-blurbRating').find('td').eq(1).text(),
+              globalRank : $('#hp-sidebar-blurbRating').find('td').eq(2).text(),
+              countryRank : $('#hp-sidebar-blurbRating').find('td').eq(3).text()
+            };
+
+            json.cookOffChallenge= {
+                rating : $('#hp-sidebar-blurbRating').find('td').eq(5).text(),
+                globalRank : $('#hp-sidebar-blurbRating').find('td').eq(6).text(),
+                countryRank : $('#hp-sidebar-blurbRating').find('td').eq(7).text()
+            };
+
+            json.lunchtimeChallenge= {
+                rating : $('#hp-sidebar-blurbRating').find('td').eq(9).text(),
+                globalRank : $('#hp-sidebar-blurbRating').find('td').eq(10).text(),
+                countryRank : $('#hp-sidebar-blurbRating').find('td').eq(11).text()
+            };
+            res.status(200).json(json);
+        }
+        else{
+            res.status(500).json(err);
+        }
+    })
+}
+
+router.getFiverr = (req,res,next) => {
+    let URI = fiverrURI + req.params.fiverr;
+    customHeaderRequest.get(URI, function (err, response, html) {
+        if (!err && response.statusCode === 200) {
+            var $ = cheerio.load(html);
+            var json = {};
+            json.avgReview = $('.total-rating-out-five').eq(0).text();
+            json.reviewsRating = $('.review-list').find('.total-rating-out-five').toArray().map(function(x){ return $(x).text()});
+            json.reviewers = $('.review-list h5').toArray().map(function(x){ return $(x).text()});
+            json.reviews = $('.review-list p').toArray().map(function(x){ return $(x).text()});
+            res.status(200).json(json);
+        }
+        else{
+            res.status(500).json(err);
+        }
+    })
+};
+
 module.exports = router;

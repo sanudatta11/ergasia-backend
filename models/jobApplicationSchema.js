@@ -10,6 +10,9 @@ var jobAppSchema = new Schema({
         "about" : {
             type: String
         },
+        "salary" : {
+            type: String
+        },
         "companyId" : {
             type: ObjectId,
             required: true,

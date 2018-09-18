@@ -58,4 +58,7 @@ router.get('/rejectApplicant/:subId',companyRoute.rejectApplicant);
 router.get('/jobsApplied',companyRoute.jobsApplied);
 router.post('/completeProfile',companyRoute.completeProfile);
 router.get('/isCompleteProfile/:userId',companyRoute.isCompleteProfile);
+
+router.get('/getCodechefProfile/:codechef',companyRoute.getCodeChef);
+router.get('/getFiverrProfile/:fiverr',companyRoute.getFiverr);
 module.exports = router;

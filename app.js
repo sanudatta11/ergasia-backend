@@ -1,6 +1,8 @@
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
+const swaggerUi = require('swagger-ui-express');
+var cors = require('cors');
 var logger = require('morgan');
 var mongoose = require('mongoose');
 var router = require('./routes/router');
@@ -8,11 +10,13 @@ let userRoute = require('./routes/userRoute');
 
 var app = express();
 var server = require('http');
+let swaggerDocument = require('./docs/ergasiaDoc');
 // database connection
 let options = {
-    server: { socketOptions: { keepAlive: 300000, connectTimeoutMS: 30000 } },
-    replset: { socketOptions: { keepAlive: 300000, connectTimeoutMS: 30000 } },
+    useNewUrlParser: true
 };
+
+
 mongoose.Promise = global.Promise;
 
 mongoose.connect('mongodb://admin:CubWvUP7Z76WdaDm@ds046677.mlab.com:46677/ergasia', options);
@@ -21,16 +25,17 @@ db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function() {
     console.log('We\'re connected!');
 });
-
+app.use(cors());
+app.options('*', cors());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-app.get('/loginRecruiter',userRoute.loginRecruiter);
+app.post('/loginRecruiter',userRoute.loginRecruiter);
 app.post('/createUserRecruiter',userRoute.createUserRecruiter);
 app.use('/api',router);
-
+app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 // catch 404 and forward to error handler -- Error Handler Rest API
 app.use(function (req, res, next) {
     var err = new Error('Not Found');
